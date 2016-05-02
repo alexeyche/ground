@@ -45,6 +45,7 @@ include_directories(${PROTOBUF_INCLUDE_DIRS} PARENT_SCOPE)
 SET_TARGET_PROPERTIES(ground PROPERTIES COMPILE_FLAGS "-fPIC")
 
 target_link_libraries(ground
+    groundpb
     ${PROTOBUF_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     m
