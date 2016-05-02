@@ -1,7 +1,7 @@
 package NGroundProto;
 
-import "time_series_info.proto";
-import "base.proto";
+import "ground/protos/time_series_info.proto";
+import "ground/protos/base.proto";
 
 message TTimeSeries {
     optional TTimeSeriesInfo Info = 1;

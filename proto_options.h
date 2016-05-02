@@ -33,13 +33,13 @@ namespace NGround {
 
                 NamedFields.insert(std::make_pair(long_option, fieldDesc));
 
-                TString short_option = fieldDesc->options().GetExtension(NGroundProto::short_option);
-                if(!short_option.empty()) {
-                    ShortNamedFields.insert(std::make_pair(short_option, fieldDesc));
+                TString short_option_v = fieldDesc->options().GetExtension(short_option);
+                if(!short_option_v.empty()) {
+                    ShortNamedFields.insert(std::make_pair(short_option_v, fieldDesc));
                 }
-                TString default_value = fieldDesc->options().GetExtension(NGroundProto::default_value);
-                if(!default_value.empty()) {
-                    Defaults.push_back(std::make_pair(fieldDesc, default_value));
+                TString default_value_v = fieldDesc->options().GetExtension(default_value);
+                if(!default_value_v.empty()) {
+                    Defaults.push_back(std::make_pair(fieldDesc, default_value_v));
                 }
                 Fields.push_back(fieldDesc);
             }
@@ -142,16 +142,16 @@ namespace NGround {
             for (const auto* fieldDesc: Fields) {
                 std::cout << "\t" << NStr::CamelCaseToOption(fieldDesc->name());
 
-                TString short_option = fieldDesc->options().GetExtension(NGroundProto::short_option);
-                if(!short_option.empty()) {
-                    std::cout << ", " << short_option;
+                TString short_option_v = fieldDesc->options().GetExtension(short_option);
+                if(!short_option_v.empty()) {
+                    std::cout << ", " << short_option_v;
                 }
 
-                TString desc = fieldDesc->options().GetExtension(NGroundProto::description);
+                TString desc = fieldDesc->options().GetExtension(description);
                 if(!desc.empty()) {
                     std::cout << "\n\t\t" << desc;
                 }
-                TString def = fieldDesc->options().GetExtension(NGroundProto::default_value);
+                TString def = fieldDesc->options().GetExtension(default_value);
                 if(!def.empty()) {
                     std::cout << ", default: " << def;
                 }

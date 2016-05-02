@@ -127,4 +127,6 @@ namespace NGround {
 
 	template <typename T>
 	using TFunction = std::function<T>;
-} // namespace NEgo
+
+
+} // namespace NGround

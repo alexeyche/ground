@@ -41,6 +41,7 @@ endforeach()
 add_library(ground SHARED ${GROUND_SRCS})
 
 include_directories(${PROTOBUF_INCLUDE_DIRS} PARENT_SCOPE)
+include_directories(${CMAKE_BINARY_DIR})
 
 SET_TARGET_PROPERTIES(ground PROPERTIES COMPILE_FLAGS "-fPIC")
 
@@ -49,4 +50,25 @@ target_link_libraries(ground
     ${PROTOBUF_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     m
+)
+
+install(TARGETS ground  DESTINATION lib/ COMPONENT)
+
+install(
+    DIRECTORY
+    ${PROJECT_SOURCE_DIR}/ground
+    DESTINATION
+    include
+    FILES_MATCHING
+    PATTERN "*.h"
+    PATTERN "*.hpp"
+)
+install(
+    DIRECTORY
+    ${CMAKE_BINARY_DIR}/ground/protos
+    DESTINATION
+    include/ground
+    FILES_MATCHING
+    PATTERN "*.h"
+    PATTERN "*.hpp"
 )
