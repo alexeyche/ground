@@ -6,9 +6,9 @@
 #include <ground/optional.h>
 #include <ground/any.h>
 
-#include <contrib/rapidjson/writer.h>
-#include <contrib/rapidjson/document.h>
-#include <contrib/rapidjson/prettywriter.h>
+#include <ground/contrib/rapidjson/writer.h>
+#include <ground/contrib/rapidjson/document.h>
+#include <ground/contrib/rapidjson/prettywriter.h>
 
 namespace NJson = rapidjson;
 

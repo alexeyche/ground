@@ -5,7 +5,7 @@
 using std::string;
 
 #include <ground/base/errors.h>
-#include <contrib/spdlog/spdlog.h>
+#include <ground/contrib/spdlog/spdlog.h>
 #undef S
 
 namespace NGround {
