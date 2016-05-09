@@ -30,7 +30,7 @@ namespace NGround {
 		EProto ReadProtobufType();
 
 		bool ReadProtobufType(EProto &dst);
-		
+
 		template <typename T>
 		T ReadObject() {
 			typename T::TProto pb;
@@ -50,7 +50,7 @@ namespace NGround {
 	        return true;
 		}
 
-		
+
 		bool ReadProtobufMessage(NPb::Message& message);
 
 		template <typename T>
@@ -67,15 +67,19 @@ namespace NGround {
 			return true;
 		}
 
+		template <typename T>
+		bool WriteProtobuf(NPb::Message& message) {
+			return (*this)(message, DeduceType<T>());
+		}
 
 		bool operator ()(NPb::Message& message, EProto protoType);
 
 		template <typename T>
-		EProto DeduceType();
+		static EProto DeduceType();
 
 	private:
 		bool TypeWasRead;
-		
+
         std::ostream* OStr;
         std::istream* IStr;
 
