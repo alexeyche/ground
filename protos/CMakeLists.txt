@@ -12,3 +12,20 @@ target_link_libraries(groundpb
     ${PROTOBUF_LIBRARY}
 )
 install(TARGETS groundpb  DESTINATION lib/ COMPONENT)
+
+install(
+    DIRECTORY
+    ${CMAKE_BINARY_DIR}/ground/protos
+    DESTINATION
+    include/ground
+    FILES_MATCHING
+    PATTERN "*.h"
+    PATTERN "*.hpp"
+    PATTERN "*.py"
+)
+install(CODE
+    "EXECUTE_PROCESS(
+        COMMAND 
+        ${CMAKE_SOURCE_DIR}/scripts/touch.py ${CMAKE_INSTALL_PREFIX}/include/ground/__init__.py ${CMAKE_INSTALL_PREFIX}/include/ground/protos/__init__.py
+    )"
+)
