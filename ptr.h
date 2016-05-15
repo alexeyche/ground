@@ -54,6 +54,10 @@ namespace NGround {
 		const T& operator * () const {
 			return Ref();
 		}
+
+		T& operator * () {
+			return Ref();
+		}
 		
 		bool IsSet() const {
 			return Ptr ? true : false;
