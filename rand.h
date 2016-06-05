@@ -2,6 +2,7 @@
 
 #include <ground/base/base.h>
 #include <ground/ptr.h>
+#include <ground/protos/distr.pb.h>
 
 #include <random>
 #include <chrono>
@@ -27,11 +28,30 @@ namespace NGround {
 			return Norm(Generator);
 		}
 		
+		double GetExp(double rate) {
+			return -std::log(GetUnif())/rate;
+		}
+
+		double DrawValue(const NGroundProto::TDistr& d) {
+			if (d.has_value()) {
+				return d.value();
+			} else
+			if (d.has_exp()) {
+				return GetExp(d.exp().rate());
+			} else 
+			if (d.has_norm()) {
+				return d.norm().mean() + d.norm().sd()*GetNorm();
+			}
+			return 0.0;
+		}
+
  	private:
 		std::uniform_real_distribution<double> Unif;
 		std::normal_distribution<double> Norm;
 
 		std::mt19937 Generator;
 	};
+
+
 
 } // namespace NGround

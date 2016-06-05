@@ -66,9 +66,11 @@ namespace NGround {
 		ui32 size() const {
 			return TVector<T>::size();
 		}
-		void resize(ui32 s) {
-			TVector<T>::resize(s);
+		
+		void resize(ui32 s, T def_val = T()) {
+			TVector<T>::resize(s, def_val);
 		}
+
 		void emplace_back(T&& v) {
 			TVector<T>::emplace_back(std::forward<T>(v));
 		}

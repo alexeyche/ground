@@ -1,0 +1,17 @@
+package NGroundProto;
+
+message TExpDistr {
+    optional double Rate = 1;
+}
+
+message TNormDistr {
+    optional double Mean = 1;
+    optional double Sd = 2;
+}
+
+message TDistr {
+    optional double Value = 1;
+    optional TExpDistr Exp = 2;
+    optional TNormDistr Norm = 3;
+}
+

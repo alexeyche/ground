@@ -60,7 +60,7 @@ namespace NGround {
             }
             NRow = nr;
             NCol = nc;
-            Values.resize(NRow*NCol);
+            Values.resize(NRow*NCol, 0);
             RowLabelsIds.resize(NRow);
             ColLabelsIds.resize(NCol);
     	}
