@@ -10,6 +10,7 @@
 #include <thread>
 #include <mutex>
 #include <complex>
+#include <set>
 
 namespace NGround {
 
@@ -128,5 +129,6 @@ namespace NGround {
 	template <typename T>
 	using TFunction = std::function<T>;
 
-
+	template <typename T>
+	using TSet = std::set<T>;
 } // namespace NGround

@@ -1,19 +1,16 @@
 package NGroundProto;
 
 
-message TLabelPos {
+message TLabel {
     optional uint32 LabelId = 1;
-    optional uint32 Start = 2;
+    optional uint32 From = 2;
+    optional uint32 To = 3;
 }
 
-message TLabelInfo {
-    optional string Name = 1;
-    optional uint32 Duration = 2;
-}
 
 message TTimeSeriesInfo {
-    repeated TLabelInfo UniqueLabels = 1;
-    repeated TLabelPos LabelsStart = 2;
+    repeated TLabel Labels = 1;
+    repeated string UniqueLabelNames = 2;
     optional double Dt = 3;
     optional uint32 DimSize = 4;
 }

@@ -47,6 +47,8 @@ namespace NGround {
 
         TTimeSeries ConvertToBinaryTimeSeries(double dt) const;
 
+        TTimeSeries ConvertToRateVectors(double winLength) const;
+
         void AddSpike(ui32 ni, double t) {
             while(ni >= Data.size()) {
                 Data.emplace_back();
@@ -62,12 +64,12 @@ namespace NGround {
 
             TVector<ui32> indices(Dim(), 0);
 
-            for(ui32 li=0; li<Info.LabelsStart.size(); ++li) {
-                const ui32 &start_of_label = Info.LabelsStart[li].Start;
-                const ui32 &label_id = Info.LabelsStart[li].LabelId;
+            for(ui32 li=0; li<Info.Labels.size(); ++li) {
+                const ui32& start_of_label = Info.Labels[li].From;
+                const ui32& label_id = Info.Labels[li].LabelId;
 
-                const ui32 &end_of_label = start_of_label + Info.UniqueLabels[label_id].Duration;
-                const string &label = Info.UniqueLabels[label_id].Name;
+                const ui32& end_of_label = Info.Labels[label_id].To;
+                const string& label = Info.UniqueLabelNames[label_id];
 
 
                 TSpikesList labeled_sl;
@@ -83,7 +85,7 @@ namespace NGround {
                 while(Dim() > labeled_sl.Dim()) {
                     labeled_sl.Data.emplace_back();
                 }
-                labeled_sl.Info.AddLabelAtPos(label, 0, Info.UniqueLabels[label_id].Duration);
+                labeled_sl.Info.AddLabelAtPos(label, 0, end_of_label - start_of_label);
                 sl_chopped.push_back(labeled_sl);
             }
             L_DEBUG << "SpikesList, Successfully chopped spike lists in " << sl_chopped.size() << " chunks";

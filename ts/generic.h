@@ -111,7 +111,7 @@ namespace NGround {
             }
             return col;
         }
-
+        
         void AddValue(ui32 dim_index, typename TData::TElement val) {
             if(dim_index == Info.DimSize) {
                 Info.DimSize = dim_index+1;
@@ -142,18 +142,18 @@ namespace NGround {
         }
 
         void AssertOneLabel() {
-            ENSURE(Info.UniqueLabels.size() != 0, "Trying to get one label from nonlabeled time series");
-            ENSURE(Info.UniqueLabels.size() == 1, "Trying to get one label from multilabeled time series");
+            ENSURE(Info.Labels.size() != 0, "Trying to get one label from nonlabeled time series");
+            ENSURE(Info.Labels.size() == 1, "Trying to get one label from multilabeled time series");
         }
 
         const string& GetLabel() {
             AssertOneLabel();
-            return Info.UniqueLabels[0].Name;
+            return Info.UniqueLabelNames[0];
         }
 
         const ui32& GetLabelId() {
             AssertOneLabel();
-            return Info.LabelsStart[0].LabelId;
+            return Info.Labels[0].LabelId;
         }
 
         void SetDimSize(const ui32 &size) {
@@ -173,12 +173,11 @@ namespace NGround {
         TVector<TDerived> Chop() const {
             TVector<TDerived> ts_chopped;
 
-            for(ui32 li=0; li<Info.LabelsStart.size(); ++li) {
-                const ui32 &start_of_label = Info.LabelsStart[li].Start;
-                const ui32 &label_id = Info.LabelsStart[li].LabelId;
-
-                const ui32 &end_of_label = start_of_label + Info.UniqueLabels[label_id].Duration;
-                const string &label = Info.UniqueLabels[label_id].Name;
+            for(ui32 li=0; li<Info.Labels.size(); ++li) {
+                const ui32& start_of_label = Info.Labels[li].From;
+                const ui32& end_of_label = Info.Labels[li].To;
+                const ui32& label_id = Info.Labels[li].LabelId;
+                const string& label = Info.UniqueLabelNames[label_id];
 
                 TDerived labeled_ts;
                 for(ui32 elem_id = start_of_label; elem_id < end_of_label; ++elem_id) {
@@ -186,7 +185,7 @@ namespace NGround {
                         labeled_ts.AddValue(di, Data[di].Values[elem_id]);
                     }
                 }
-                labeled_ts.Info.AddLabelAtPos(label, 0, Info.UniqueLabels[label_id].Duration);
+                labeled_ts.Info.AddLabelAtPos(label, 0, end_of_label - start_of_label);
                 ts_chopped.push_back(labeled_ts);
             }
             L_DEBUG << "TimeSeries, Successfully chopped time series in " << ts_chopped.size() << " chunks";
