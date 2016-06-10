@@ -11,7 +11,7 @@ namespace NGround {
     struct TLabel: public IProtoSerial<NGroundProto::TLabel> {
         TLabel() {}
 
-        TLabel(ui32 labelId, ui32 from, ui32 to) 
+        TLabel(ui32 labelId, ui32 from, ui32 to)
             : LabelId(labelId)
             , From(from)
             , To(to)
@@ -20,7 +20,7 @@ namespace NGround {
         void SerialProcess(TProtoSerial& serial) override {
             serial(LabelId);
             serial(From);
-            serial(To);            
+            serial(To);
         }
 
         bool operator == (const TLabel& other) const {
@@ -42,11 +42,16 @@ namespace NGround {
         }
 
         void AddLabelAtPos(const string &lab, ui32 pos, ui32 dur) {
-            ENSURE((Labels.size() == 0) || (Labels.front().To < pos), "Trying to add non increasing label: " << Labels.front().To << " >= " << pos);
+            if (Labels.size() > 0) {
+                if (Labels.front().To > pos) {
+                    throw TErrException() << "Trying to add non increasing label: " << Labels.front().To << " >= " << pos;
+                }
+            }
+
             Labels.emplace_back();
             Labels.back().From = pos;
             Labels.back().To = pos + dur;
-            
+
             Labels.back().LabelId = std::distance(UniqueLabelNames.begin(), std::find(UniqueLabelNames.begin(), UniqueLabelNames.end(), lab));
             if (Labels.back().LabelId == UniqueLabelNames.size()) {
                 UniqueLabelNames.push_back(lab);

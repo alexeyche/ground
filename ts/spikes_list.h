@@ -63,20 +63,12 @@ namespace NGround {
             TVector<TSpikesList> sl_chopped;
 
             TVector<ui32> indices(Dim(), 0);
-
-            for(ui32 li=0; li<Info.Labels.size(); ++li) {
-                const ui32& start_of_label = Info.Labels[li].From;
-                const ui32& label_id = Info.Labels[li].LabelId;
-
-                const ui32& end_of_label = Info.Labels[label_id].To;
-                const string& label = Info.UniqueLabelNames[label_id];
-
-
+            for (const auto& lab: Info.Labels) {
                 TSpikesList labeled_sl;
                 for(ui32 di=0; di<Dim(); ++di) {
-                    while( (indices[di] < Data[di].Values.size()) && (Data[di].Values[indices[di]] < end_of_label) ) {
-                        if(Data[di].Values[indices[di]] >= start_of_label) {
-                            labeled_sl.AddSpike(di, Data[di].Values[indices[di]] - static_cast<double>(start_of_label));
+                    while( (indices[di] < Data[di].Values.size()) && (Data[di].Values[indices[di]] < lab.To) ) {
+                        if(Data[di].Values[indices[di]] >= lab.From) {
+                            labeled_sl.AddSpike(di, Data[di].Values[indices[di]] - static_cast<double>(lab.From));
                         }
                         indices[di]++;
                     }
@@ -85,7 +77,7 @@ namespace NGround {
                 while(Dim() > labeled_sl.Dim()) {
                     labeled_sl.Data.emplace_back();
                 }
-                labeled_sl.Info.AddLabelAtPos(label, 0, end_of_label - start_of_label);
+                labeled_sl.Info.AddLabelAtPos(Info.UniqueLabelNames.at(lab.LabelId), 0, lab.To - lab.From);
                 sl_chopped.push_back(labeled_sl);
             }
             L_DEBUG << "SpikesList, Successfully chopped spike lists in " << sl_chopped.size() << " chunks";

@@ -75,8 +75,8 @@ namespace NGround {
         }
 
         void InnerProduct(const TDerived& anotherTs) {
-            ENSURE( ((Dim() == anotherTs.Dim()) || (anotherTs.Dim() == 1)) && (Length() == anotherTs.Length()), 
-                "Can't multiply time series with different dimensions or length," 
+            ENSURE( ((Dim() == anotherTs.Dim()) || (anotherTs.Dim() == 1)) && (Length() == anotherTs.Length()),
+                "Can't multiply time series with different dimensions or length,"
                 << " left dim " << Dim() << ", right dim " << anotherTs.Dim()
                 << " left length " << Length() << ", right length " << anotherTs.Length());
             for(ui32 di=0; di < Data.size(); ++di) {
@@ -111,7 +111,7 @@ namespace NGround {
             }
             return col;
         }
-        
+
         void AddValue(ui32 dim_index, typename TData::TElement val) {
             if(dim_index == Info.DimSize) {
                 Info.DimSize = dim_index+1;
@@ -172,20 +172,14 @@ namespace NGround {
 
         TVector<TDerived> Chop() const {
             TVector<TDerived> ts_chopped;
-
-            for(ui32 li=0; li<Info.Labels.size(); ++li) {
-                const ui32& start_of_label = Info.Labels[li].From;
-                const ui32& end_of_label = Info.Labels[li].To;
-                const ui32& label_id = Info.Labels[li].LabelId;
-                const string& label = Info.UniqueLabelNames[label_id];
-
+            for (const auto& lab: Info.Labels) {
                 TDerived labeled_ts;
-                for(ui32 elem_id = start_of_label; elem_id < end_of_label; ++elem_id) {
+                for(ui32 elem_id = lab.From; elem_id < lab.To; ++elem_id) {
                     for(ui32 di=0; di<Data.size(); ++di) {
                         labeled_ts.AddValue(di, Data[di].Values[elem_id]);
                     }
                 }
-                labeled_ts.Info.AddLabelAtPos(label, 0, end_of_label - start_of_label);
+                labeled_ts.Info.AddLabelAtPos(Info.UniqueLabelNames.at(lab.LabelId), 0, lab.To - lab.From);
                 ts_chopped.push_back(labeled_ts);
             }
             L_DEBUG << "TimeSeries, Successfully chopped time series in " << ts_chopped.size() << " chunks";

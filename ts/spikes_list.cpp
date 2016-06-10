@@ -13,7 +13,7 @@ namespace NGround {
         ui32 max_size = std::numeric_limits<ui32>::min();
         for (ui32 di=0; di<Data.size(); ++di) {
             double t=0;
-            for (const auto &spike_time: Data[di].Values) {
+            for (const auto& spike_time: Data[di].Values) {
                 while (t < spike_time) {
                     out.AddValue(di, 0.0);
                     t += dt;
