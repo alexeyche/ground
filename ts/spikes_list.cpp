@@ -17,7 +17,7 @@ namespace NGround {
                 while (t < spike_time) {
                     out.AddValue(di, 0.0);
                     t += dt;
-                    
+
                 }
                 out.AddValue(di, 1.0);
                 t += dt;
@@ -41,17 +41,17 @@ namespace NGround {
         TTimeSeries out;
 
         out.SetDimSize(Dim());
-        
+
         double minSpikeTime = std::numeric_limits<double>::max();
-        
+
         for (ui32 di=0; di<Data.size(); ++di) {
             if (Data[di].Values.size() > 0) {
                 minSpikeTime = std::min(minSpikeTime, Data[di].Values.front());
             }
         }
-        
+
         TVector<ui32> listIndices(Dim(), 0);
-        
+
         TDeque<TPair<double, double>> silenceDiff;
         silenceDiff.emplace_back(0.0, minSpikeTime);
 
@@ -79,42 +79,40 @@ namespace NGround {
             if (minNextSpikeTime == std::numeric_limits<double>::max()) {
                 weAreDone = true;
             } else {
-                silenceDiff.emplace_back(minSpikeTime, minNextSpikeTime);
+                silenceDiff.emplace_back(minSpikeTime + winLength, minNextSpikeTime);
                 minSpikeTime = minNextSpikeTime;
             }
         }
 
         double cumulativeShift = 0.0;
+
+        ui32 prevLabelTo = 0;
+
         for (const auto& lt: Info.Labels) {
-            double from = lt.From;
-            double to = lt.To;
-            L_INFO << "Working with " << "(" << from << ", " << to << ")";
-            
-            from -= cumulativeShift;
-            to -= cumulativeShift;
-            
-            L_INFO << "After cumulative shift " << "(" << from << ", " << to << ")";
-            while (silenceDiff.size() > 0) {
-                const TPair<double, double>& head = silenceDiff.front();
-                if (lt.From > head.second) {
-                    double diff = head.second - head.first;
-                    L_INFO << "(" << from << ", " << to << ") -> " << "(" << from - diff << ", " << to - diff << ")";
-                    from -= diff;
-                    to -= diff;
-                    cumulativeShift += diff;
-                    silenceDiff.pop_front();
-                } else {
-                    break;
-                }
+            // L_INFO << "Considering label (" << lt.From << ", " << lt.To << ")";
+
+            double labelCumulativeDiff = 0.0;
+            while ((silenceDiff.size() > 0) && (silenceDiff.front().second < lt.To)) {
+                const auto& sd = silenceDiff.front();
+                labelCumulativeDiff += sd.second  - sd.first;
+                silenceDiff.pop_front();
             }
-            from = ceil(from/winLength);
-            to = ceil(to/winLength);
-            L_INFO << "Window ceiling: (" << from << ", " << to << ")";
-            const TString& srcLabel = Info.UniqueLabelNames.at(lt.LabelId);
-            L_INFO << "So adding " << "(" << from << ", " << to << ") duration " << to - from; 
-            out.Info.AddLabelAtPos(srcLabel, from, to - from);
+            // L_INFO << "Result cum diff " << labelCumulativeDiff << " and " << cumulativeShift;
+            double labelFrom = lt.From - cumulativeShift;
+            double labelTo = lt.To - labelCumulativeDiff - cumulativeShift;
+
+            // L_INFO << "Result label: (" << labelFrom << ", " << labelTo << ")";
+
+            labelFrom = std::max(prevLabelTo, static_cast<ui32>(floor(labelFrom/winLength)));
+            labelTo = ceil(labelTo/winLength);
+
+            prevLabelTo = labelTo;
+
+            // L_INFO << "Result label after ceil: (" << labelFrom << ", " << labelTo << ")";
+            out.Info.AddLabelAtPos(Info.UniqueLabelNames.at(lt.LabelId), labelFrom, labelTo-labelFrom);
+
+            cumulativeShift += labelCumulativeDiff;
         }
-        
         return out;
     }
 
