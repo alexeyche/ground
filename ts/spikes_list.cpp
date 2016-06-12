@@ -37,82 +37,140 @@ namespace NGround {
         return out;
     }
 
+    // TTimeSeries TSpikesList::ConvertToRateVectors(double winLength) const {
+    //     TTimeSeries out;
+
+    //     out.SetDimSize(Dim());
+
+    //     double minSpikeTime = std::numeric_limits<double>::max();
+
+    //     for (ui32 di=0; di<Data.size(); ++di) {
+    //         if (Data[di].Values.size() > 0) {
+    //             minSpikeTime = std::min(minSpikeTime, Data[di].Values.front());
+    //         }
+    //     }
+
+    //     TVector<ui32> listIndices(Dim(), 0);
+
+    //     TDeque<TPair<double, double>> silenceDiff;
+    //     silenceDiff.emplace_back(0.0, minSpikeTime);
+
+    //     bool weAreDone = false;
+    //     while (!weAreDone) {
+    //         double minNextSpikeTime = std::numeric_limits<double>::max();
+    //         TVector<ui32> window(Dim(), 0);
+
+    //         for (ui32 di=0; di<Data.size(); ++di) {
+    //             while (listIndices[di] < Data[di].Values.size()) {
+    //                 const double& newSpike = Data[di].Values[ listIndices[di] ];
+    //                 if (newSpike <= (minSpikeTime + winLength)) { // in a window
+    //                     window[di] += 1;
+    //                 } else {
+    //                     minNextSpikeTime = std::min(minNextSpikeTime, newSpike);
+    //                     break;
+    //                 }
+    //                 ++listIndices[di];
+    //             }
+    //         }
+    //         for (ui32 di=0; di<Data.size(); ++di) {
+    //             out.AddValue(di, static_cast<double>(window[di])/winLength);
+    //         }
+
+    //         if (minNextSpikeTime == std::numeric_limits<double>::max()) {
+    //             weAreDone = true;
+    //         } else {
+    //             silenceDiff.emplace_back(minSpikeTime + winLength, minNextSpikeTime);
+    //             minSpikeTime = minNextSpikeTime;
+    //         }
+    //     }
+
+    //     double cumulativeShift = 0.0;
+    //     ui32 prevLabelTo = 0;
+    //     for (const auto& lt: Info.Labels) {
+    //         L_INFO << "Considering label (" << lt.From << ", " << lt.To << ")";
+
+    //         double labelFrom = lt.From ;
+    //         double labelTo = lt.To;
+
+    //         double labelCumulativeDiff = 0.0;
+    //         while ((silenceDiff.size() > 0) && (silenceDiff.front().second < lt.To)) {
+    //             const auto& sd = silenceDiff.front(); 
+    //             double diff = sd.second  - sd.first;
+    //             if (sd.first < labelFrom) {
+    //                 labelFrom = sd.first;
+    //             }    
+    //             silenceDiff.pop_front();
+    //         }
+            
+    //         labelFrom -= cumulativeShift;
+    //         labelTo -= cumulativeShift;
+            
+    //         L_INFO << "Result cum diff " << cumulativeShift;
+            
+    //         L_INFO << "Result label: (" << labelFrom << ", " << labelTo << ")";
+
+    //         labelFrom = std::max(prevLabelTo, static_cast<ui32>(floor(labelFrom/winLength)));
+    //         labelTo = ceil(labelTo/winLength);
+
+    //         prevLabelTo = labelTo;
+
+    //         L_INFO << "Result label after ceil: (" << labelFrom << ", " << labelTo << ")";
+    //         out.Info.AddLabelAtPos(Info.UniqueLabelNames.at(lt.LabelId), labelFrom, labelTo-labelFrom);
+
+    //         // cumulativeShift += labelCumulativeDiff;
+    //     }
+    //     return out;
+    // }
+
     TTimeSeries TSpikesList::ConvertToRateVectors(double winLength) const {
         TTimeSeries out;
-
-        out.SetDimSize(Dim());
-
-        double minSpikeTime = std::numeric_limits<double>::max();
-
-        for (ui32 di=0; di<Data.size(); ++di) {
-            if (Data[di].Values.size() > 0) {
-                minSpikeTime = std::min(minSpikeTime, Data[di].Values.front());
-            }
-        }
-
+        out.SetDimSize(Dim());    
+        
         TVector<ui32> listIndices(Dim(), 0);
+        double winStart = 0.0;
 
-        TDeque<TPair<double, double>> silenceDiff;
-        silenceDiff.emplace_back(0.0, minSpikeTime);
+        double timeEnd = -1;
+        if (Info.Labels.size() > 0) {
+            timeEnd = Info.Labels.back().To;
+        }
 
         bool weAreDone = false;
         while (!weAreDone) {
-            double minNextSpikeTime = std::numeric_limits<double>::max();
+            weAreDone = true;
+            
             TVector<ui32> window(Dim(), 0);
-
+            
             for (ui32 di=0; di<Data.size(); ++di) {
                 while (listIndices[di] < Data[di].Values.size()) {
                     const double& newSpike = Data[di].Values[ listIndices[di] ];
-                    if (newSpike <= (minSpikeTime + winLength)) { // in a window
-                        window[di] += 1;
+                    if (newSpike <= (winStart + winLength)) { // in a window
+                        window[di] += 1.0;
+                        ++listIndices[di];
                     } else {
-                        minNextSpikeTime = std::min(minNextSpikeTime, newSpike);
+                        weAreDone = false;
                         break;
                     }
-                    ++listIndices[di];
                 }
             }
+
             for (ui32 di=0; di<Data.size(); ++di) {
                 out.AddValue(di, static_cast<double>(window[di])/winLength);
             }
-
-            if (minNextSpikeTime == std::numeric_limits<double>::max()) {
-                weAreDone = true;
-            } else {
-                silenceDiff.emplace_back(minSpikeTime + winLength, minNextSpikeTime);
-                minSpikeTime = minNextSpikeTime;
+            winStart += winLength;
+            if ((timeEnd > 0) && (winStart < timeEnd) && (weAreDone)) {
+                weAreDone = false;
             }
         }
-
-        double cumulativeShift = 0.0;
-
         ui32 prevLabelTo = 0;
-
         for (const auto& lt: Info.Labels) {
-            // L_INFO << "Considering label (" << lt.From << ", " << lt.To << ")";
-
-            double labelCumulativeDiff = 0.0;
-            while ((silenceDiff.size() > 0) && (silenceDiff.front().second < lt.To)) {
-                const auto& sd = silenceDiff.front();
-                labelCumulativeDiff += sd.second  - sd.first;
-                silenceDiff.pop_front();
-            }
-            // L_INFO << "Result cum diff " << labelCumulativeDiff << " and " << cumulativeShift;
-            double labelFrom = lt.From - cumulativeShift;
-            double labelTo = lt.To - labelCumulativeDiff - cumulativeShift;
-
-            // L_INFO << "Result label: (" << labelFrom << ", " << labelTo << ")";
-
-            labelFrom = std::max(prevLabelTo, static_cast<ui32>(floor(labelFrom/winLength)));
-            labelTo = ceil(labelTo/winLength);
-
-            prevLabelTo = labelTo;
-
-            // L_INFO << "Result label after ceil: (" << labelFrom << ", " << labelTo << ")";
+            ui32 labelFrom = std::max(prevLabelTo, static_cast<ui32>(floor(lt.From/winLength)));
+            ui32 labelTo = ceil(lt.To/winLength);
+            ENSURE(labelFrom < labelTo, 
+                "Failed to deduce new label borders: (" << lt.From << ", " << lt.To << ") -> (" << labelFrom << ", " << labelTo << ")");
             out.Info.AddLabelAtPos(Info.UniqueLabelNames.at(lt.LabelId), labelFrom, labelTo-labelFrom);
-
-            cumulativeShift += labelCumulativeDiff;
+            prevLabelTo = labelTo;
         }
+
         return out;
     }
 
