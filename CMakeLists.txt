@@ -72,3 +72,5 @@ install(
     PATTERN "*.h"
     PATTERN "*.hpp"
 )
+
+PATCH_APPLE(lib/libground.dylib)
