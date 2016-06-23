@@ -11,6 +11,7 @@
 #include <mutex>
 #include <complex>
 #include <set>
+#include <map>
 
 namespace NGround {
 
@@ -131,4 +132,9 @@ namespace NGround {
 
 	template <typename T>
 	using TSet = std::set<T>;
+
+
+	template <typename K, typename V>
+	using TMap = std::map<K, V>;
+
 } // namespace NGround
