@@ -77,8 +77,8 @@ namespace NGround {
         TMaybe<ui32> GetClassId(double t) const {
             while(__CurrentPosition < Labels.size()) {
                 const auto& label = Labels.at(__CurrentPosition);
-                if (label.To < t) {
-                    if (label.From >= t) {
+                if (label.From <= t) {
+                    if (label.To > t) {
                         return label.LabelId;
                     }
                 } else {
